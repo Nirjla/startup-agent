@@ -1,0 +1,25 @@
+name: Daily Idea Scout
+
+on:
+  schedule:
+    - cron: "15 1 * * *"   # 01:15 UTC = 07:00 Kathmandu (UTC+5:45)
+  workflow_dispatch: {}     # lets you trigger a run manually from the Actions tab
+
+jobs:
+  scout:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run scout
+        run: node scout.js
+        env:
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
+          PRODUCT_HUNT_TOKEN: ${{ secrets.PRODUCT_HUNT_TOKEN }}
