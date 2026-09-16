@@ -1,3 +1,13 @@
+# Save this in your repo at: .github/workflows/scout.yml
+#
+# Required repo secrets (Settings > Secrets and variables > Actions):
+#   NVIDIA_API_KEY      - from build.nvidia.com
+#   SLACK_BOT_TOKEN     - xoxb-... from your Slack app, needs chat:write scope
+#   SLACK_CHANNEL_ID    - e.g. C0B840HJ1GQ
+#   PRODUCT_HUNT_TOKEN  - optional; omit and Product Hunt is skipped
+#
+# Note: scheduled workflows only run for free on PUBLIC repos.
+
 name: Daily Idea Scout
 
 on:
@@ -14,7 +24,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "24"
+          node-version: "20"
 
       - name: Run scout
         run: node scout.js
@@ -23,3 +33,11 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_CHANNEL_ID: ${{ secrets.SLACK_CHANNEL_ID }}
           PRODUCT_HUNT_TOKEN: ${{ secrets.PRODUCT_HUNT_TOKEN }}
+
+      - name: Alert Slack on failure
+        if: failure()
+        run: |
+          curl -s -X POST https://slack.com/api/chat.postMessage \
+            -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"channel\": \"${{ secrets.SLACK_CHANNEL_ID }}\", \"text\": \"⚠️ *Daily Idea Scout failed* — check the run log: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}"
